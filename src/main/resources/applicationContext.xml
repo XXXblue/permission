@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.alibaba.com/schema/stat http://www.alibaba.com/schema/stat.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!--占位符加载数据库的连接参数，不能写死的那块-->
+    <bean id="propertyConfiguer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!--忽略掉不能处理的占位-->
+        <property name="ignoreUnresolvablePlaceholders" value="true"></property>
+        <!--配置文件的位置-->
+        <property name="locations">
+            <list>
+                <value>classpath:settings.properties</value>
+            </list>
+        </property>
+    </bean>
+    <!--这里要小心要放数据库配置文件后面不然出错-->
+    <import resource="redis.xml"></import>
+
+    <!--配置db数据源，一般数据源采用阿里巴巴的druid数据池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${db.driverClassName}"></property>
+        <property name="url" value="${db.url}"></property>
+        <property name="username" value="${db.username}"></property>
+        <property name="password" value="${db.password}"></property>
+        <property name="initialSize" value="3"></property>
+        <property name="minIdle" value="3"></property>
+        <!--实际项目中的最大连接数要结合项目的使用人数来定-->
+        <property name="maxActive" value="20"></property>
+        <property name="maxWait" value="60000"></property>
+        <property name="proxyFilters">
+            <list>
+                <ref bean="stat-filter" />
+                <ref bean="wall-filter"/>
+            </list>
+        </property>
+    </bean>
+
+    <!--mapper相关的java文件的查找-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="mapperLocations" value="classpath:mapper/*.xml" />
+    </bean>
+
+    <!--mapper相关的xml文件的查找-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.mmall.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+
+
+    <!-- druid 监控 sql的执行情况-->
+    <bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+        <!--超过3000为慢sql为记录下来-->
+        <property name="slowSqlMillis" value="3000" />
+        <!--用log记录慢sql-->
+        <property name="logSlowSql" value="true" />
+        <!--合并慢sql-->
+        <property name="mergeSql" value="true" />
+    </bean>
+    <!--监控的类型为mysql-->
+    <bean id="wall-filter" class="com.alibaba.druid.wall.WallFilter">
+        <property name="dbType" value="mysql" />
+        <property name="config" ref="wall-config"/>
+    </bean>
+    <bean id="wall-config" class="com.alibaba.druid.wall.WallConfig">
+        <property name="multiStatementAllow" value="true" />
+    </bean>
+</beans>

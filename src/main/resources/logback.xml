@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--为true，修改60秒后生效-->
+<configuration scan="true" scanPeriod="60 seconds">
+    <!--输出到控制台上-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!--日志格式 时间 进程 日志级别 日志名称 日志信息 换行符-->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--<appender name="permission" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+    <!--会找到tomcat下的logs目录来记录日志-->
+    <!--<file>${catalina.home}/logs/permission.log</file>-->
+    <!--压缩的规则-->
+    <!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+    <!--<FileNamePattern>${catalina.home}/logs/permission.%d{yyyy-MM-dd}.log.gz</FileNamePattern>-->
+    <!--</rollingPolicy>-->
+    <!--展示的内容-->
+    <!--<layout class="ch.qos.logback.classic.PatternLayout">-->
+    <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>-->
+    <!--</layout>-->
+    <!--</appender>-->
+    <!--使用上面的配置记录日志-->
+    <!--<logger name="xxx" level="INFO">-->
+    <!--<appender-ref ref="permission"/>-->
+    <!--</logger>-->
+
+    <!-- TRACE < DEBUG < INFO < WARN < ERROR -->
+    <!--输出等级-->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>
